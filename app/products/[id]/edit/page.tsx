@@ -4,18 +4,24 @@ import { useEffect, useState } from 'react';
 import { useParams, useRouter } from 'next/navigation';
 import { Product } from '@/types/product';
 import ProductForm from '@/components/ProductForm';
+import { useAuth } from '@/components/AuthContext';
 
 export default function EditProduct() {
   const params = useParams();
   const router = useRouter();
   const [product, setProduct] = useState<Product | null>(null);
   const [loading, setLoading] = useState(true);
+  const { user, loading: authLoading } = useAuth();
 
   useEffect(() => {
+    if (!authLoading && !user) {
+      router.replace('/login');
+      return;
+    }
     if (params.id) {
       fetchProduct();
     }
-  }, [params.id]);
+  }, [params.id, authLoading, user, router]);
 
   const fetchProduct = async () => {
     try {
@@ -61,11 +67,13 @@ export default function EditProduct() {
     }
   };
 
-  if (loading) {
+  if (authLoading || !user || loading) {
     return (
       <div className="max-w-3xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         <div className="text-center py-12">
-          <p className="text-gray-500">Loading product...</p>
+          <p className="text-gray-500">
+            {authLoading || loading ? 'Loading product...' : 'Redirecting to login...'}
+          </p>
         </div>
       </div>
     );

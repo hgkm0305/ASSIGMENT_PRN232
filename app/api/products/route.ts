@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import pool from '@/lib/db';
 import { ProductInput } from '@/types/product';
+import { getCurrentUserFromRequest } from '@/lib/auth';
 
 // GET /api/products - List all products
 export async function GET(request: NextRequest) {
@@ -55,6 +56,14 @@ export async function GET(request: NextRequest) {
 // POST /api/products - Create a new product
 export async function POST(request: NextRequest) {
   try {
+    const user = await getCurrentUserFromRequest(request);
+    if (!user) {
+      return NextResponse.json(
+        { error: 'Unauthorized' },
+        { status: 401 }
+      );
+    }
+
     const body: ProductInput = await request.json();
     
     // Validation

@@ -3,6 +3,8 @@
 import { useEffect, useState } from 'react';
 import Link from 'next/link';
 import { Product } from '@/types/product';
+import { useAuth } from '@/components/AuthContext';
+import { useCart } from '@/components/CartContext';
 
 export default function Home() {
   const [products, setProducts] = useState<Product[]>([]);
@@ -14,6 +16,8 @@ export default function Home() {
     totalPages: 0,
     limit: 12,
   });
+  const { user } = useAuth();
+  const { addItem } = useCart();
 
   useEffect(() => {
     fetchProducts();
@@ -99,12 +103,14 @@ export default function Home() {
       ) : products.length === 0 ? (
         <div className="text-center py-12">
           <p className="text-gray-500 text-lg">No products found.</p>
-          <Link
-            href="/products/new"
-            className="mt-4 inline-block px-6 py-2 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 transition"
-          >
-            Add Your First Product
-          </Link>
+          {user && (
+            <Link
+              href="/products/new"
+              className="mt-4 inline-block px-6 py-2 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 transition"
+            >
+              Add Your First Product
+            </Link>
+          )}
         </div>
       ) : (
         <>
@@ -139,18 +145,35 @@ export default function Home() {
                   </div>
                 </Link>
                 <div className="px-4 pb-4 flex gap-2">
-                  <Link
-                    href={`/products/${product.id}/edit`}
-                    className="flex-1 text-center px-4 py-2 bg-gray-200 text-gray-700 rounded hover:bg-gray-300 transition"
-                  >
-                    Edit
-                  </Link>
                   <button
-                    onClick={() => handleDelete(product.id)}
-                    className="flex-1 px-4 py-2 bg-red-600 text-white rounded hover:bg-red-700 transition"
+                    onClick={() =>
+                      addItem({
+                        productId: product.id,
+                        name: product.name,
+                        price: product.price,
+                        image: product.image,
+                      })
+                    }
+                    className="flex-1 px-4 py-2 bg-indigo-600 text-white rounded hover:bg-indigo-700 transition"
                   >
-                    Delete
+                    Add to Cart
                   </button>
+                  {user && (
+                    <>
+                      <Link
+                        href={`/products/${product.id}/edit`}
+                        className="flex-1 text-center px-4 py-2 bg-gray-200 text-gray-700 rounded hover:bg-gray-300 transition"
+                      >
+                        Edit
+                      </Link>
+                      <button
+                        onClick={() => handleDelete(product.id)}
+                        className="flex-1 px-4 py-2 bg-red-600 text-white rounded hover:bg-red-700 transition"
+                      >
+                        Delete
+                      </button>
+                    </>
+                  )}
                 </div>
               </div>
             ))}

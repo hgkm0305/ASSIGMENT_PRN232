@@ -4,12 +4,16 @@ import { useEffect, useState } from 'react';
 import { useParams, useRouter } from 'next/navigation';
 import Link from 'next/link';
 import { Product } from '@/types/product';
+import { useAuth } from '@/components/AuthContext';
+import { useCart } from '@/components/CartContext';
 
 export default function ProductDetail() {
   const params = useParams();
   const router = useRouter();
   const [product, setProduct] = useState<Product | null>(null);
   const [loading, setLoading] = useState(true);
+  const { user } = useAuth();
+  const { addItem } = useCart();
 
   useEffect(() => {
     if (params.id) {
@@ -120,20 +124,37 @@ export default function ProductDetail() {
                 {product.description}
               </p>
             </div>
-            <div className="flex gap-4">
-              <Link
-                href={`/products/${product.id}/edit`}
-                className="flex-1 text-center px-6 py-3 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 transition"
-              >
-                Edit Product
-              </Link>
+            <div className="mb-6">
               <button
-                onClick={handleDelete}
-                className="flex-1 px-6 py-3 bg-red-600 text-white rounded-lg hover:bg-red-700 transition"
+                onClick={() =>
+                  addItem({
+                    productId: product.id,
+                    name: product.name,
+                    price: product.price,
+                    image: product.image,
+                  })
+                }
+                className="w-full mb-2 px-6 py-3 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 transition"
               >
-                Delete Product
+                Add to Cart
               </button>
             </div>
+            {user && (
+              <div className="flex gap-4">
+                <Link
+                  href={`/products/${product.id}/edit`}
+                  className="flex-1 text-center px-6 py-3 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 transition"
+                >
+                  Edit Product
+                </Link>
+                <button
+                  onClick={handleDelete}
+                  className="flex-1 px-6 py-3 bg-red-600 text-white rounded-lg hover:bg-red-700 transition"
+                >
+                  Delete Product
+                </button>
+              </div>
+            )}
           </div>
         </div>
       </div>

@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import pool from '@/lib/db';
 import { ProductInput } from '@/types/product';
+import { getCurrentUserFromRequest } from '@/lib/auth';
 
 // GET /api/products/:id - Get a single product
 export async function GET(
@@ -42,6 +43,14 @@ export async function PUT(
   { params }: { params: { id: string } }
 ) {
   try {
+    const user = await getCurrentUserFromRequest(request);
+    if (!user) {
+      return NextResponse.json(
+        { error: 'Unauthorized' },
+        { status: 401 }
+      );
+    }
+
     const id = parseInt(params.id);
     
     if (isNaN(id)) {
@@ -121,6 +130,14 @@ export async function DELETE(
   { params }: { params: { id: string } }
 ) {
   try {
+    const user = await getCurrentUserFromRequest(request);
+    if (!user) {
+      return NextResponse.json(
+        { error: 'Unauthorized' },
+        { status: 401 }
+      );
+    }
+
     const id = parseInt(params.id);
     
     if (isNaN(id)) {
